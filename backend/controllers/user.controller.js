@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 const userService = require("../services/user.service");
 const UserModel = require("../models/user.model");
+const BlacklistToken = require("../models/blacklistToken.model");
+const blacklistTokenModel = require("../models/blacklistToken.model");
 
 
 
@@ -72,8 +74,9 @@ module.exports.loginUser = async (req, res, next) => {
             })
         }
 
-        const token =await user.generateAuthToken();
+        const token = await user.generateAuthToken();
 
+        res.cookie('token', token)
         res.status(201).json({
             message: "User logged in successfully",
             token,
@@ -87,12 +90,28 @@ module.exports.loginUser = async (req, res, next) => {
     }
 }
 
-module.exports.getUserProfile=async(req,res,next)=>{
+module.exports.getUserProfile = async (req, res, next) => {
     try {
-        
+        res.status(200).json(req.user)
     } catch (error) {
         res.status(401).json({
             message: "Something went wrong while getting user details!!!"
+        })
+    }
+}
+
+module.exports.logoutUser = async (req, res, next) => {
+    try {
+        res.clearCookie('token')
+        const token = req.cookies.token || req.headers.authorization.split(' ')[1];
+
+        await blacklistTokenModel.create({ token })
+
+        res.status(200).json({ message: "Logged out successfully!!!" })
+
+    } catch (error) {
+        res.status(401).json({
+            message: "Something went wrong while Logout!!!"
         })
     }
 }
