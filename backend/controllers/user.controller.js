@@ -77,7 +77,7 @@ module.exports.loginUser = async (req, res, next) => {
         const token = await user.generateAuthToken();
 
         res.cookie('token', token)
-        res.status(201).json({
+        res.status(200).json({
             message: "User logged in successfully",
             token,
             user
